@@ -74,12 +74,12 @@ export const verifyOTP = async (req, res) => {
       { expiresIn: '7d' }
     )
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    })
+ res.cookie('token', token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+})
 
     res.status(200).json({
       message: 'Email verified successfully!',
