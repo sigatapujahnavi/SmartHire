@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
 })
 
   await transporter.sendMail({
-    from: `"SmartHire" <${process.env.EMAIL_USER}>`,
+   from: `"SmartHire" <janupotti24@gmail.com>`,
     to: email,
     subject: 'Your SmartHire Verification OTP',
     html: `
