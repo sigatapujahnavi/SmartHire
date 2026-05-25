@@ -35,9 +35,11 @@ export const signup = async (req, res) => {
       })
     }
 
-    await sendOTPEmail(email, fullName, otp)
-
-    res.status(201).json({ message: 'OTP sent to your email!' })
+// Send email without blocking the response
+sendOTPEmail(email, fullName, otp).catch(err => 
+  console.error('Email send error:', err.message)
+)
+res.status(201).json({ message: 'OTP sent to your email!' })
 
   } catch (error) {
     console.error('SIGNUP ERROR:', error.message)
@@ -121,12 +123,12 @@ export const login = async (req, res) => {
       { expiresIn: '7d' }
     )
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    })
+   res.cookie('token', token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+})
 
     res.status(200).json({
       message: 'Login successful',
@@ -145,7 +147,11 @@ export const login = async (req, res) => {
 
 // LOGOUT
 export const logout = async (req, res) => {
-  res.clearCookie('token')
+ res.clearCookie('token', {
+  httpOnly: true,
+  secure: true,
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+})
   res.status(200).json({ message: 'Logged out successfully' })
 }
 export const getMe = async (req, res) => {
