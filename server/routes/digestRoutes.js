@@ -17,6 +17,21 @@ router.post('/run', protectRoute, async (req, res) => {
   }
 })
 
+// POST /api/digest/cron-trigger — called by external cron service (no auth, secret key protected)
+router.post('/cron-trigger', async (req, res) => {
+  try {
+    const secret = req.headers['x-cron-secret']
+    if (secret !== process.env.CRON_SECRET) {
+      return res.status(401).json({ message: 'Unauthorized' })
+    }
+    // Don't await — respond immediately so cron service doesn't timeout
+    runDailyDigest().catch(err => console.error('[Cron Trigger] Failed:', err.message))
+    res.status(200).json({ message: 'Digest triggered' })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+})
+
 // GET /api/digest/jobs — fetch last 3 days of digest jobs grouped by date
 router.get('/jobs', protectRoute, async (req, res) => {
   try {

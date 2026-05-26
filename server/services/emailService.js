@@ -1,3 +1,4 @@
+// server/service/emailService.js
 import fetch from 'node-fetch'
 
 export const sendOTPEmail = async (email, fullName, otp) => {
