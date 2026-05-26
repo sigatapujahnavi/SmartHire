@@ -1,6 +1,6 @@
 //server/services/digestService.js
 import fetch from 'node-fetch'
-import nodemailer from 'nodemailer'
+//import nodemailer from 'nodemailer'
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs'
 import UserProfile from '../models/UserProfile.js'
 import User from '../models/User.js'
@@ -163,22 +163,25 @@ const buildEmailHTML = (userName, topJobs) => {
 
 // ── Send email via Nodemailer ──
 const sendDigestEmail = async (toEmail, userName, topJobs) => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  })
-
   const html = buildEmailHTML(userName, topJobs)
-
-  await transporter.sendMail({
-    from: `"SmartHire AI" <${process.env.EMAIL_USER}>`,
-    to: toEmail,
-    subject: `☀️ Your Daily Job Digest — ${topJobs.length} AI-Matched Jobs Today`,
-    html,
+  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'accept': 'application/json',
+      'api-key': process.env.BREVO_API_KEY,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      sender: { name: 'SmartHire AI', email: 'janupotti24@gmail.com' },
+      to: [{ email: toEmail, name: userName }],
+      subject: `☀️ Your Daily Job Digest — ${topJobs.length} AI-Matched Jobs Today`,
+      htmlContent: html,
+    }),
   })
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.message || 'Failed to send digest email')
+  }
 }
 
 // ── MAIN AGENT FUNCTION ──
